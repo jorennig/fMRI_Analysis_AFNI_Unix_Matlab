@@ -5,7 +5,12 @@
 fMRI_Preprocessing_Statistics_Recon.txt
 
 - Creates afni_proc.py for every subject specified including pre-processing steps (re-alignment, outlier analysis, spatial smoothing, mean scaling, 1st level statistical regression model)
-- 
+- Does SUMA surface reconstruction
+- Runs individual models with additional first level models
+- Creates anatomical ROIs by selecting certain regions from an atlas
+- Creates functional ROIs by selecting active Voxels for certain conditions
+- Creates anatomical/functional ROIs by merging functional and antomical ROIs
+- Calculates and extracts percent signal values from statistical maps from individual ROIs
 
 
 # Automated SUMA controller:
