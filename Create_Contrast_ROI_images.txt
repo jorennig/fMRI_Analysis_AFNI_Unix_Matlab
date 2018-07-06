@@ -1,0 +1,326 @@
+## Show mouth/eye contrast
+
+set ss = ( QO QP QQ QR QS QT QU QV QW QX QY QZ RA RB )
+
+set ss = ( RB )
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni
+3dcopy -overwrite stats.{$s} stats.temp
+
+cd /Volumes/data/BCM/{$s}
+./@ec
+
+echo wait 20 seconds
+sleep 20
+plugout_drive  -com 'SWITCH_UNDERLAY anatavg' -quit
+plugout_drive  -com 'SWITCH_OVERLAY stats.temp' -quit
+plugout_drive  -com 'SET_FUNCTION stats.temp[0 47 0]' -quit
+plugout_drive  -com 'SET_THRESHOLD A.5000 1'  -quit
+plugout_drive  -com 'SET_PBAR_ALL A.-7 40.0=yellow 26.4=oran-yell 13.2=oran-red 2.0=green -2.0=blue -13.2=lt-blue1 -26.4=lt-blue2 -40=blue-cyan' -quit
+plugout_drive  -com 'SET_FUNC_RANGE 1'  -quit
+
+echo turn off label at crosshairs
+DriveSuma -com viewer_cont -key F9
+
+echo turn on recorder
+
+DriveSuma -com viewer_cont -viewer_position 600 300
+DriveSuma -com viewer_cont -viewer_size 800 600
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+sleep 5
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Mouth_Eye_Con_RH_lat.jpg
+mv {$s}_Mouth_Eye_Con_RH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_Contrast
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Mouth_Eye_Con_LH_lat.jpg
+mv {$s}_Mouth_Eye_Con_LH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_Contrast
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Mouth_Eye_Con_RH_med.jpg
+mv {$s}_Mouth_Eye_Con_RH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_Contrast
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+]
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Mouth_Eye_Con_LH_med.jpg
+mv {$s}_Mouth_Eye_Con_LH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_Contrast
+DriveSuma -com viewer_cont -key ctrl+]
+
+cd /Volumes/data/BCM/{$s}/afni
+rm stats.temp*
+
+DriveSuma -com kill_suma
+plugout_drive  -com 'QUIT' -quit
+
+echo wait 20 seconds
+sleep 20
+
+end
+
+
+
+## Show clear vs. noisy contrast (A/AV/both)
+
+set ss = ( QO QP QQ QR QS QT QU QV QW QX QY QZ RA RB )
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni
+3dcopy -overwrite stats.{$s} stats.temp
+
+cd /Volumes/data/BCM/{$s}
+./@ec
+
+echo wait 20 seconds
+sleep 20
+plugout_drive  -com 'SWITCH_UNDERLAY anatavg' -quit
+plugout_drive  -com 'SWITCH_OVERLAY stats.temp' -quit
+plugout_drive  -com 'SET_FUNCTION stats.temp[0 35 0]' -quit
+plugout_drive  -com 'SET_THRESHOLD A.5000 1'  -quit
+plugout_drive  -com 'SET_PBAR_ALL A.-7 40.0=yellow 26.4=oran-yell 13.2=oran-red 2.0=green -2.0=blue -13.2=lt-blue1 -26.4=lt-blue2 -40=blue-cyan' -quit
+plugout_drive  -com 'SET_FUNC_RANGE 1'  -quit
+
+echo turn off label at crosshairs
+DriveSuma -com viewer_cont -key F9
+
+echo turn on recorder
+
+DriveSuma -com viewer_cont -viewer_position 600 300
+DriveSuma -com viewer_cont -viewer_size 800 600
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+sleep 5
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Clear_Noisy_A_Con_RH_lat.jpg
+mv {$s}_Clear_Noisy_A_Con_RH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_A
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_A_Con_LH_lat.jpg
+mv {$s}_Clear_Noisy_A_Con_LH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_A
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_A_Con_RH_med.jpg
+mv {$s}_Clear_Noisy_A_Con_RH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_A
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+]
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_A_Con_LH_med.jpg
+mv {$s}_Clear_Noisy_A_Con_LH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_A
+DriveSuma -com viewer_cont -key ctrl+]
+
+
+plugout_drive  -com 'SET_FUNCTION stats.temp[0 38 0]' -quit
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+sleep 5
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Clear_Noisy_AV_Con_RH_lat.jpg
+mv {$s}_Clear_Noisy_AV_Con_RH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_AV
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_AV_Con_LH_lat.jpg
+mv {$s}_Clear_Noisy_AV_Con_LH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_AV
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_AV_Con_RH_med.jpg
+mv {$s}_Clear_Noisy_AV_Con_RH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_AV
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+]
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_AV_Con_LH_med.jpg
+mv {$s}_Clear_Noisy_AV_Con_LH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_AV
+DriveSuma -com viewer_cont -key ctrl+]
+
+
+plugout_drive  -com 'SET_FUNCTION stats.temp[0 41 0]' -quit
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+sleep 5
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Clear_Noisy_both_Con_RH_lat.jpg
+mv {$s}_Clear_Noisy_both_Con_RH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_both
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_both_Con_LH_lat.jpg
+mv {$s}_Clear_Noisy_both_Con_LH_lat.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_both
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_both_Con_RH_med.jpg
+mv {$s}_Clear_Noisy_both_Con_RH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_both
+
+DriveSuma -com viewer_cont -key ctrl+[
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+]
+DriveSuma -com viewer_cont -key ctrl+r
+mv autorecord*.jpg {$s}_Clear_Noisy_both_Con_LH_med.jpg
+mv {$s}_Clear_Noisy_both_Con_LH_med.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Clear_Noisy_Contrast_both
+DriveSuma -com viewer_cont -key ctrl+]
+
+
+cd /Volumes/data/BCM/{$s}/afni
+rm stats.temp*
+
+DriveSuma -com kill_suma
+plugout_drive  -com 'QUIT' -quit
+
+echo wait 20 seconds
+sleep 20
+
+end
+
+
+
+## Show mouth/eye ROIs
+
+set ss = ( QO QP QQ QR QS QT QU QV QW QX QY QZ RA RB )
+
+foreach s ( $ss )
+
+cd /Volumes/data/BCM/{$s}
+
+./@ec
+sleep 20
+
+DriveSuma -com viewer_cont -key F9
+DriveSuma -com viewer_cont -viewer_position 600 300
+DriveSuma -com viewer_cont -viewer_size 800 600
+
+sleep 5
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+rm *.jpg
+
+cd /Volumes/data/BCM/{$s}/afni
+plugout_drive  -com 'SWITCH_OVERLAY STS_post_Mouth' -quit
+plugout_drive  -com 'SET_THRESHOLD A.000 1'  -quit
+plugout_drive  -com 'SET_PBAR_ALL A.-7 40.0=yellow 26.4=oran-yell 13.2=oran-red 2.0=red -2.0=blue -13.2=lt-blue1 -26.4=lt-blue2 -40=blue-cyan' -quit
+
+sleep 5
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Mouth_ROI_L.jpg
+mv {$s}_Mouth_ROI_L.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_ROIs
+rm *.jpg
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Mouth_ROI_R.jpg
+mv {$s}_Mouth_ROI_R.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_ROIs
+rm *.jpg
+
+cd /Volumes/data/BCM/{$s}/afni
+plugout_drive  -com 'SWITCH_OVERLAY STS_post_Eyes' -quit
+plugout_drive  -com 'SET_THRESHOLD A.000 1'  -quit
+plugout_drive  -com 'SET_PBAR_ALL A.-7 40.0=yellow 26.4=oran-yell 13.2=oran-red 2.0=blue -2.0=blue -13.2=lt-blue1 -26.4=lt-blue2 -40=blue-cyan' -quit
+
+sleep 5
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Eyes_ROI_L.jpg
+mv {$s}_Eyes_ROI_L.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_ROIs
+rm *.jpg
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_Eyes_ROI_R.jpg
+mv {$s}_Eyes_ROI_R.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/Mouth_Eye_ROIs
+rm *.jpg
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+rm *.jpg
+
+DriveSuma -com kill_suma
+plugout_drive  -com 'QUIT' -quit
+
+echo wait 20 seconds
+sleep 20
+
+end
+
+
+## Show AV ROIs
+set ss = ( QO QP QQ QR QS QT QU QV QW QX QY QZ RA RB )
+
+foreach s ( $ss )
+
+cd /Volumes/data/BCM/{$s}
+
+./@ec
+sleep 20
+
+DriveSuma -com viewer_cont -key F9
+DriveSuma -com viewer_cont -viewer_position 600 300
+DriveSuma -com viewer_cont -viewer_size 800 600
+
+sleep 5
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+rm *.jpg
+
+cd /Volumes/data/BCM/{$s}/afni
+plugout_drive  -com 'SWITCH_OVERLAY STS_post_AV' -quit
+plugout_drive  -com 'SET_THRESHOLD A.000 1'  -quit
+plugout_drive  -com 'SET_PBAR_ALL A.-7 40.0=yellow 26.4=oran-yell 13.2=oran-red 2.0=red -2.0=blue -13.2=lt-blue1 -26.4=lt-blue2 -40=blue-cyan' -quit
+
+sleep 5
+
+DriveSuma -com viewer_cont -key ctrl+left
+DriveSuma -com viewer_cont -key ctrl+r
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_AV_ROI_L.jpg
+mv {$s}_AV_ROI_L.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/AV_ROIs
+rm *.jpg
+
+DriveSuma -com viewer_cont -key ctrl+right
+DriveSuma -com viewer_cont -key ctrl+r
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+mv autorecord*.jpg {$s}_AV_ROI_R.jpg
+mv {$s}_AV_ROI_R.jpg /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Contrast_ROI_images/AV_ROIs
+rm *.jpg
+
+cd /Volumes/data/BCM/{$s}/afni/SUMA_Recordings
+rm *.jpg
+
+DriveSuma -com kill_suma
+plugout_drive  -com 'QUIT' -quit
+
+echo wait 20 seconds
+sleep 20
+
+end
+

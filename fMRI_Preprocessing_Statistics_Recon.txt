@@ -1,0 +1,643 @@
+# Loop stats and recon over all subjects
+
+set ss = ( QS QT )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/Regressor_Files
+cp *.txt /Volumes/data/BCM/{$subj}/afni/
+
+cd /Volumes/data/BCM/{$subj}/afni
+
+# Create afni_proc.py
+afni_proc.py  -subj_id {$subj} \
+-dsets series0002.nii series0003.nii series0004.nii series0005.nii series0006.nii series0007.nii \
+-do_block align \
+-copy_anat anatavg.nii \
+-volreg_align_e2a \
+-regress_stim_times A.txt V.txt AV.txt AN.txt AVN.txt Mouth.txt Eye.txt \
+-regress_stim_labels A V AV AN AVN Mouth Eye \
+-regress_basis_multi 'BLOCK(3,1)' 'BLOCK(3,1)' 'BLOCK(3,1)' 'BLOCK(3,1)' 'BLOCK(3,1)' 'BLOCK(30,1)' 'BLOCK(30,1)' \
+-regress_censor_motion 0.3 \
+-regress_opts_3dD -local_times \
+-num_glt 9                                                             \
+-gltsym 'SYM: +V -A'                                                   \
+-glt_label 1 VvsA                                                      \
+-gltsym 'SYM: +V -AV'                                                  \
+-glt_label 2 VvsAV                                                     \
+-gltsym 'SYM: +A -AV'                                                  \
+-glt_label 3 AvsAV                                                     \
+-gltsym 'SYM: +A +V -2*AV'                                             \
+-glt_label 4 A+VvsAV                                                   \
+-gltsym 'SYM: +A -AN'                                                  \
+-glt_label 5 AvsAN                                                     \
+-gltsym 'SYM: +AV -AVN'                                                \
+-glt_label 6 AVvsAVN                                                   \
+-gltsym 'SYM: +A +AV -AN -AVN'                                         \
+-glt_label 7 ClearvsNoisy                                              \
+-gltsym 'SYM: +A -AV -AN +AVN'                                         \
+-glt_label 8 ItxVvsAN                                                  \
+-gltsym 'SYM: +Mouth -Eye'                                             \
+-glt_label 9 MouthvsEye                                                \
+-gltsym 'SYM: +Mouth +Eye'                                             \
+-glt_label 10 MouthAndEye                                              
+
+end
+
+
+set ss = ( QW QX )
+
+foreach subj ( $ss )
+
+echo Analysis Subject $subj
+
+cd /Volumes/data/BCM/{$subj}/afni
+
+tcsh -xef proc.{$subj} |& tee output.proc.{$subj}
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+cp stats.{$subj}* /Volumes/data/BCM/{$subj}/afni/
+
+end
+
+
+
+## Redo stats with MouthAndEye Contrast
+
+set ss = ( QO QP QQ QR QS QT QU QV QW QX QY QZ RA RB )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+
+3dDeconvolve -overwrite -input pb04.$subj.r*.scale+orig.HEAD  -censor motion_${subj}_censor.1D \
+    -polort A								\
+    -jobs 4                                                            	\
+    -num_stimts 13                                                      \
+    -stim_times 1 stimuli/A.txt 'BLOCK(3,1)'                            \
+    -stim_label 1 A                                        	        \
+    -stim_times 2 stimuli/V.txt 'BLOCK(3,1)'                            \
+    -stim_label 2 V                                                     \
+    -stim_times 3 stimuli/AV.txt 'BLOCK(3,1)'                           \
+    -stim_label 3 AV                                        	        \
+    -stim_times 4 stimuli/AN.txt 'BLOCK(3,1)'                           \
+    -stim_label 4 AN                                                    \
+    -stim_times 5 stimuli/AVN.txt 'BLOCK(3,1)'                          \
+    -stim_label 5 AVN                                                   \
+    -stim_times 6 stimuli/Mouth.txt 'BLOCK(30,1)'                       \
+    -stim_label 6 Mouth                                                 \
+    -stim_times 7 stimuli/Eye.txt 'BLOCK(30,1)' 	                \
+    -stim_label 7 Eye   					        \
+    -stim_file 8 motion_demean.1D'[0]' -stim_base 8 -stim_label 8 roll  	\
+    -stim_file 9 motion_demean.1D'[1]' -stim_base 9 -stim_label 9 pitch 	\
+    -stim_file 10 motion_demean.1D'[2]' -stim_base 10 -stim_label 10 yaw   	\
+    -stim_file 11 motion_demean.1D'[3]' -stim_base 11 -stim_label 11 dS 	\
+    -stim_file 12 motion_demean.1D'[4]' -stim_base 12 -stim_label 12 dL 	\
+    -stim_file 13 motion_demean.1D'[5]' -stim_base 13 -stim_label 13 dP 	\
+    -num_glt 10                                                            \
+    -gltsym 'SYM: +V -A'                                                   \
+    -glt_label 1 VvsA                                                      \
+    -gltsym 'SYM: +V -AV'                                                  \
+    -glt_label 2 VvsAV                                                     \
+    -gltsym 'SYM: +A -AV'                                                  \
+    -glt_label 3 AvsAV                                                     \
+    -gltsym 'SYM: +A +V -2*AV'                                             \
+    -glt_label 4 A+VvsAV                                                   \
+    -gltsym 'SYM: +A -AN'                                                  \
+    -glt_label 5 AvsAN                                                     \
+    -gltsym 'SYM: +AV -AVN'                                                \
+    -glt_label 6 AVvsAVN                                                   \
+    -gltsym 'SYM: +A +AV -AN -AVN'                                         \
+    -glt_label 7 ClearvsNoisy                                              \
+    -gltsym 'SYM: +A -AV -AN +AVN'                                         \
+    -glt_label 8 ItxVvsAN                                                  \
+    -gltsym 'SYM: +Mouth -Eye'                                             \
+    -glt_label 9 MouthvsEye                                                \
+    -gltsym 'SYM: +Mouth +Eye'                                             \
+    -glt_label 10 MouthAndEye                                              \
+    -fout -tout -x1D X.xmat.1D -xjpeg X.jpg                                \
+    -x1D_uncensored X.nocensor.xmat.1D                                     \
+    -fitts fitts.$subj                                                     \
+    -errts errts.${subj}                                                   \
+    -bucket stats.$subj
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+cp stats.{$subj}* /Volumes/data/BCM/{$subj}/afni/
+
+end
+
+
+
+set ss = ( RE RF )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}
+setenv SUBJECTS_DIR `pwd`
+
+recon-all -all -parallel -subject fs -i afni/anatavg.nii 
+
+# Convert surfaces for use with AFNI/SUMA:
+cd /Volumes/data/BCM/{$subj}/fs
+@SUMA_Make_Spec_FS -NIFTI -sid fs
+
+# Load AFNI and SUMA and co-ordinate the viewers:
+cd /Volumes/data/BCM/{$subj} 
+cp /Volumes/data/scripts/@ec .
+
+# Get atlases into afni directory
+cd /Volumes/data/BCM/{$subj}/afni/
+cp ../fs/SUMA/aparc.a2009s+aseg_rank.nii .
+cp ../fs/SUMA/aparc+aseg_rank.nii .
+
+end
+
+
+
+set ss = ( QW QX )
+
+foreach subj ( $ss )
+
+echo Analysis Subject $subj
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+
+3dDeconvolve -input pb04.$subj.r*.scale+orig.HEAD  -censor motion_${subj}_censor.1D \
+    -polort A								\
+    -jobs 4                                                            	\
+    -num_stimts 13                                                      \
+    -stim_times 1 stimuli/A.txt 'TENTzero(0,15,11)'                     \
+    -stim_label 1 A                                        	        \
+    -stim_times 2 stimuli/V.txt 'TENTzero(0,15,11)'                     \
+    -stim_label 2 V                                                     \
+    -stim_times 3 stimuli/AV.txt 'TENTzero(0,15,11)'                    \
+    -stim_label 3 AV                                        	        \
+    -stim_times 4 stimuli/AN.txt 'TENTzero(0,15,11)'                    \
+    -stim_label 4 AN                                                    \
+    -stim_times 5 stimuli/AVN.txt 'TENTzero(0,15,11)'                   \
+    -stim_label 5 AVN                                                   \
+    -stim_times 6 stimuli/Mouth.txt 'TENTzero(0,36,23)'                 \
+    -stim_label 6 Mouth                                                 \
+    -stim_times 7 stimuli/Eye.txt 'TENTzero(0,36,23)' 	                \
+    -stim_label 7 Eye   					        \
+    -iresp 1 irf1.nii -iresp 2 irf2.nii -iresp 3 irf3.nii -iresp 4 irf4.nii -iresp 5 irf5.nii -iresp 6 irf6.nii -iresp 7 irf7.nii \
+    -sresp 1 srf1.nii -sresp 2 srf2.nii -sresp 3 srf3.nii -sresp 4 srf4.nii -sresp 5 srf5.nii -sresp 6 srf6.nii -sresp 7 srf7.nii \
+    -stim_file 8 motion_demean.1D'[0]' -stim_base 8 -stim_label 8 roll  	\
+    -stim_file 9 motion_demean.1D'[1]' -stim_base 9 -stim_label 9 pitch 	\
+    -stim_file 10 motion_demean.1D'[2]' -stim_base 10 -stim_label 10 yaw   	\
+    -stim_file 11 motion_demean.1D'[3]' -stim_base 11 -stim_label 11 dS 	\
+    -stim_file 12 motion_demean.1D'[4]' -stim_base 12 -stim_label 12 dL 	\
+    -stim_file 13 motion_demean.1D'[5]' -stim_base 13 -stim_label 13 dP 	\
+    -fitts fitts_IRF_tent.nii									
+
+3dTcat -prefix Noisy_AV_IRFs.nii irf1.nii irf2.nii irf3.nii irf4.nii irf5.nii irf6.nii irf7.nii
+3dTcat -prefix Noisy_AV_SRFs.nii srf1.nii srf2.nii srf3.nii srf4.nii srf5.nii srf6.nii srf7.nii
+
+cp Noisy_AV_IRFs* /Volumes/data/BCM/{$subj}/afni/
+cp Noisy_AV_SRFs* /Volumes/data/BCM/{$subj}/afni/
+
+end
+
+
+
+# 3dDeconvolve with regressors for noisy trials with full/some and without percept
+
+set ss = ( RJ )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+
+3dDeconvolve -overwrite -input pb04.$subj.r*.scale+orig.HEAD  -censor motion_${subj}_censor.1D \
+    -polort A								\
+    -jobs 4                                                            	\
+    -num_stimts 15                                                      \
+    -stim_times 1 stimuli/A.txt 'BLOCK(3,1)'                            \
+    -stim_label 1 A                                        	        \
+    -stim_times 2 stimuli/V.txt 'BLOCK(3,1)'                            \
+    -stim_label 2 V                                                     \
+    -stim_times 3 stimuli/AV.txt 'BLOCK(3,1)'                           \
+    -stim_label 3 AV                                        	        \
+    -stim_times 4 stimuli/{$subj}_AN_SP.txt 'BLOCK(3,1)'                \
+    -stim_label 4 AN_SP                                                 \
+    -stim_times 5 stimuli/{$subj}_AN_NP.txt 'BLOCK(3,1)'                \
+    -stim_label 5 AN_NP                                                 \
+    -stim_times 6 stimuli/{$subj}_AVN_SP.txt 'BLOCK(3,1)'               \
+    -stim_label 6 AVN_SP                                                \
+    -stim_times 7 stimuli/{$subj}_AVN_NP.txt 'BLOCK(3,1)'               \
+    -stim_label 7 AVN_NP                                                \
+    -stim_times 8 stimuli/Mouth.txt 'BLOCK(30,1)'                       \
+    -stim_label 8 Mouth                                                 \
+    -stim_times 9 stimuli/Eye.txt 'BLOCK(30,1)' 	                \
+    -stim_label 9 Eye   					        \
+    -stim_file 10 motion_demean.1D'[0]' -stim_base 10 -stim_label 10 roll  	\
+    -stim_file 11 motion_demean.1D'[1]' -stim_base 11 -stim_label 11 pitch 	\
+    -stim_file 12 motion_demean.1D'[2]' -stim_base 12 -stim_label 12 yaw   	\
+    -stim_file 13 motion_demean.1D'[3]' -stim_base 13 -stim_label 13 dS 	\
+    -stim_file 14 motion_demean.1D'[4]' -stim_base 14 -stim_label 14 dL 	\
+    -stim_file 15 motion_demean.1D'[5]' -stim_base 15 -stim_label 15 dP 	\
+    -num_glt 18                                                            \
+    -gltsym 'SYM: +V -A'                                                   \
+    -glt_label 1 VvsA                                                      \
+    -gltsym 'SYM: +V -AV'                                                  \
+    -glt_label 2 VvsAV                                                     \
+    -gltsym 'SYM: +A -AV'                                                  \
+    -glt_label 3 AvsAV                                                     \
+    -gltsym 'SYM: +A +V -2*AV'                                             \
+    -glt_label 4 A+VvsAV                                                   \
+    -gltsym 'SYM: +A -AN_SP -AN_NP'                                        \
+    -glt_label 5 AvsAN                                                     \
+    -gltsym 'SYM: +AV -AVN_SP -AVN_NP'                                     \
+    -glt_label 6 AVvsAVN                                                   \
+    -gltsym 'SYM: +A +AV -AN_SP -AN_NP -AVN_SP -AVN_NP'                    \
+    -glt_label 7 ClearvsNoisy                                              \
+    -gltsym 'SYM: +A -AV -AN_SP -AN_NP +AVN_SP +AVN_NP'                    \
+    -glt_label 8 ItxVvsAN                                                  \
+    -gltsym 'SYM: +AN_SP -AN_NP'                                           \
+    -glt_label 9 AN_SPvsAN_NP                                              \
+    -gltsym 'SYM: +AVN_SP -AVN_NP'                                         \
+    -glt_label 10 AVN_SPvsAVN_NP                                           \
+    -gltsym 'SYM: +AN_SP -AN_NP +AVN_SP -AVN_NP'                           \
+    -glt_label 11 SPvsNP                                                   \
+    -gltsym 'SYM: +A -AN_SP'                                               \
+    -glt_label 12 AvsAN_SP                                                 \
+    -gltsym 'SYM: +A -AN_NP'                                               \
+    -glt_label 13 AvsAN_NP                                                 \
+    -gltsym 'SYM: +AV -AVN_SP'                                             \
+    -glt_label 14 AVvsAVN_SP                                               \
+    -gltsym 'SYM: +AV -AVN_NP'                                             \
+    -glt_label 15 AVvsAVN_NP                                               \
+    -gltsym 'SYM: +AN_SP -AN_NP +AVN_SP -AVN_NP'                           \
+    -glt_label 16 SPvsNP                                                   \
+    -gltsym 'SYM: +Mouth -Eye'                                             \
+    -glt_label 17 MouthvsEye                                               \
+    -gltsym 'SYM: +Mouth +Eye'                                             \
+    -glt_label 18 MouthAndEye                                              \
+    -fout -tout -x1D X.xmat.1D -xjpeg X.jpg                                \
+    -x1D_uncensored X.nocensor.xmat.1D                                     \
+    -fitts fitts_SP_NP.$subj                                               \
+    -errts errts_SP_NP.${subj}                                             \
+    -bucket stats_SP_NP.$subj
+
+cd /Volumes/data/BCM/{$subj}/afni/{$subj}.results
+cp stats_SP_NP.{$subj}* /Volumes/data/BCM/{$subj}/afni/
+
+end
+
+
+## Create anatomical and functional ROIs
+set ss = ( QO )
+
+set ss = ( QX )
+
+set ss = ( RH )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}/afni
+
+3dcalc -prefix STS_anat_org -a aparc.a2009s+aseg_rank.nii -expr "1*step(equals(a,83) + equals(a,118) + equals(a,79)) + 1*step(equals(a,157)+equals(a,192)+equals(a,153))"
+3dresample -master stats.{$subj}+orig -prefix STS_anat -inset STS_anat_org+orig  -rmode NN
+3dcalc -prefix STS_anat_LR -a STS_anat+orig -expr "step(z)*step(a)*1 + step(-z)*step(a)*2"
+3dclust -1Dformat 5 100 STS_anat_LR+orig > {$subj}_clust_info.1D
+cp {$subj}_clust_info.1D /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Creation
+
+end
+
+
+set ss = ( QP )
+
+set ss = ( QU )
+
+set ss = ( QV )
+
+set ss = ( QZ )
+
+set ss = ( RE RF RG )
+
+set ss = ( RI )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}/afni
+
+3dcalc -overwrite -prefix STS_anat_org -a aparc.a2009s+aseg_rank.nii -expr "1*step(equals(a,81) + equals(a,116) + equals(a,77)) + 1*step(equals(a,155)+equals(a,190)+equals(a,151))"
+3dresample -overwrite -master stats.{$subj}+orig -prefix STS_anat -inset STS_anat_org+orig  -rmode NN
+3dcalc -overwrite -prefix STS_anat_LR -a STS_anat+orig -expr "step(z)*step(a)*1 + step(-z)*step(a)*2"
+3dclust -overwrite -1Dformat 5 100 STS_anat_LR+orig > {$subj}_clust_info.1D
+cp {$subj}_clust_info.1D /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Creation
+
+end
+
+
+set ss = ( QQ QR )
+
+set ss = ( QS QT )
+
+set ss = ( QW )
+
+set ss = ( QY )
+
+set ss = ( RA )
+
+set ss = ( RB )
+
+set ss = ( RC RD )
+
+set ss = ( RJ )
+
+foreach subj ( $ss )
+
+cd /Volumes/data/BCM/{$subj}/afni
+
+3dcalc -overwrite -prefix STS_anat_org -a aparc.a2009s+aseg_rank.nii -expr "1*step(equals(a,82) + equals(a,117) + equals(a,78)) + 1*step(equals(a,156)+equals(a,191)+equals(a,152))"
+3dresample -overwrite -master stats.{$subj}+orig -prefix STS_anat -inset STS_anat_org+orig  -rmode NN
+3dcalc -overwrite -prefix STS_anat_LR -a STS_anat+orig -expr "step(z)*step(a)*1 + step(-z)*step(a)*2"
+3dclust -overwrite -1Dformat 5 100 STS_anat_LR+orig > {$subj}_clust_info.1D
+cp {$subj}_clust_info.1D /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Creation
+
+end
+
+
+
+set ss = ( RH RI RJ )
+set cl = ( -3.5 -1.5 -0.5 )
+set cr = ( -2.5 -5.5 8.5 )
+set i = 1
+
+while ( $i <= 3 )
+
+cd /Volumes/data/BCM/$ss[$i]/afni
+
+set cl_c = $cl[$i]
+set cr_c = $cr[$i]
+
+3dcalc -overwrite -prefix STS_anat_LR_post -a STS_anat_LR+orig -expr "step(equals(a,1))*step(x-($cl_c))+(step(equals(a,2))*step(x-($cr_c))*2)"
+
+@ i++
+
+end
+
+
+## Create Mouth/Eye ROIs
+
+## 0: Full-F, 47: Mouth vs Eye t-stat
+set ss = ( RH RI RJ )
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+cd /Volumes/data/BCM/{$s}/afni
+
+3dcalc -overwrite -prefix STS_post_Mouth -a0 stats.{$s}+orig -b47 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step(b-2)*step(equals(c,1))+(step(a-5)*step(b-2)*step(equals(c,2))*2)"
+
+3dcalc -overwrite -prefix STS_post_Eyes -a0 stats.{$s}+orig -b47 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step((b*-1)-2)*step(equals(c,1))+(step(a-5)*step((b*-1)-2)*step(equals(c,2))*2)"
+
+end
+
+
+## 0 Full-F, 51: Mouth and Eye F-stat
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+cd /Volumes/data/BCM/{$s}/afni
+
+3dcalc -overwrite -prefix STS_post_MouthAndEye -a51 stats.{$s}+orig -b STS_anat_LR_post+orig -expr "step(a-5)*step(equals(b,1))+(step(a-5)*step(equals(b,2))*2)"
+
+end
+
+
+## Create AV, A, V ROIs
+
+## 0: Full-F, 2: A t-stat, 5: V t-stat
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+cd /Volumes/data/BCM/{$s}/afni
+
+3dcalc -overwrite -prefix STS_post_AV+orig -a2 stats.{$s}+orig -b5 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-2)*step(b-2)*step(equals(c,1))+(step(a-2)*step(b-2)*step(equals(c,2))*2)"
+
+3dcalc -overwrite -prefix STS_post_A+orig -a2 stats.{$s}+orig -b STS_anat_LR_post+orig -expr "step(a-2)*step(equals(b,1))+(step(a-2)*step(equals(b,2))*2)"
+
+3dcalc -overwrite -prefix STS_post_V+orig -a5 stats.{$s}+orig -b STS_anat_LR_post+orig -expr "step(a-2)*step(equals(b,1))+(step(a-2)*step(equals(b,2))*2)"
+
+end
+
+
+
+## Create Clear vs Noisy ROIs (A,AV,both)
+## 0: Full-F, 35: A vs AN t-stat, 38: AV vs AVN t-stat, 41: Clear vs Noisy (both)
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+cd /Volumes/data/BCM/{$s}/afni
+
+3dcalc -overwrite -prefix STS_post_A_Clear -a0 stats.{$s}+orig -b35 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step(b-2)*step(equals(c,1))+(step(a-5)*step(b-2)*step(equals(c,2))*2)"
+3dcalc -overwrite -prefix STS_post_A_Noisy -a0 stats.{$s}+orig -b35 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step((b*-1)-2)*step(equals(c,1))+(step(a-5)*step((b*-1)-2)*step(equals(c,2))*2)"
+
+3dcalc -overwrite -prefix STS_post_AV_Clear -a0 stats.{$s}+orig -b38 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step(b-2)*step(equals(c,1))+(step(a-5)*step(b-2)*step(equals(c,2))*2)"
+3dcalc -overwrite -prefix STS_post_AV_Noisy -a0 stats.{$s}+orig -b38 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step((b*-1)-2)*step(equals(c,1))+(step(a-5)*step((b*-1)-2)*step(equals(c,2))*2)"
+
+3dcalc -overwrite -prefix STS_post_A_AV_Clear -a0 stats.{$s}+orig -b41 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step(b-2)*step(equals(c,1))+(step(a-5)*step(b-2)*step(equals(c,2))*2)"
+3dcalc -overwrite -prefix STS_post_A_AV_Noisy -a0 stats.{$s}+orig -b41 stats.{$s}+orig -c STS_anat_LR_post+orig -expr "step(a-5)*step((b*-1)-2)*step(equals(c,1))+(step(a-5)*step((b*-1)-2)*step(equals(c,2))*2)"
+
+end
+
+
+
+## Do ROI analysis
+
+# From Mouth vs Eye STS ROIs
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_Mouth+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_Mouth_L stats.{$s}+orig'[1,4,7,10,13]'
+3dmaskdump -mask STS_post_Mouth+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_Mouth_R stats.{$s}+orig'[1,4,7,10,13]'
+
+3dmaskdump -mask STS_post_Eyes+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_Eyes_L stats.{$s}+orig'[1,4,7,10,13]'
+3dmaskdump -mask STS_post_Eyes+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_Eyes_R stats.{$s}+orig'[1,4,7,10,13]'
+
+cp {$s}_STS_post_Mouth_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs
+cp {$s}_STS_post_Mouth_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs
+
+cp {$s}_STS_post_Eyes_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs
+cp {$s}_STS_post_Eyes_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs
+
+end
+
+
+# From Mouth and Eye STS ROIs
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_MouthAndEye+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_MouthandEye_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_MouthAndEye+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_MouthandEye_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_MouthandEye_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_MouthAndEye_ROIs
+cp {$s}_STS_post_MouthandEye_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_MouthAndEye_ROIs
+
+end
+
+
+# For AV, A, V STS ROIs
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_AV_L stats.{$s}+orig'[16,19]'
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_AV_R stats.{$s}+orig'[16,19]'
+
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_L stats.{$s}+orig'[16,19]'
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_R stats.{$s}+orig'[16,19]'
+
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_V_L stats.{$s}+orig'[16,19]'
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_V_R stats.{$s}+orig'[16,19]'
+
+cp {$s}_STS_post_AV_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+cp {$s}_STS_post_AV_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+
+cp {$s}_STS_post_A_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+cp {$s}_STS_post_A_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+
+cp {$s}_STS_post_V_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+cp {$s}_STS_post_V_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs
+
+end
+
+
+
+## From A/V/AV STS ROIs with all AN/AVN trials
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_AV_AN_AVN_L stats.{$s}+orig'[1,4,7,10,13]'
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_AV_AN_AVN_R stats.{$s}+orig'[1,4,7,10,13]'
+
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_AN_AVN_L stats.{$s}+orig'[1,4,7,10,13]'
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_AN_AVN_R stats.{$s}+orig'[1,4,7,10,13]'
+
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_V_AN_AVN_L stats.{$s}+orig'[1,4,7,10,13]'
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_V_AN_AVN_R stats.{$s}+orig'[1,4,7,10,13]'
+
+cp {$s}_STS_post_AV_AN_AVN_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+cp {$s}_STS_post_AV_AN_AVN_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+
+cp {$s}_STS_post_A_AN_AVN_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+cp {$s}_STS_post_A_AN_AVN_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+
+cp {$s}_STS_post_V_AN_AVN_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+cp {$s}_STS_post_V_AN_AVN_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN
+
+end
+
+
+## From Mouth/Eye STS ROIs with AN/AVN all/some and nothing trials
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_Mouth+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_Mouth_SP_NP_L stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_Mouth+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_Mouth_SP_NP_R stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+
+3dmaskdump -mask STS_post_Eyes+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_Eyes_SP_NP_L stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_Eyes+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_Eyes_SP_NP_R stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_Mouth_SP_NP_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs_SP_NP
+cp {$s}_STS_post_Mouth_SP_NP_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs_SP_NP
+
+cp {$s}_STS_post_Eyes_SP_NP_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs_SP_NP
+cp {$s}_STS_post_Eyes_SP_NP_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Mouth_Eye_ROIs_SP_NP
+
+end
+
+
+## From A/V/AV STS ROIs with AN/AVN all/some and nothing trials
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_AV_SP_NP_L stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_AV+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_AV_SP_NP_R stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_SP_NP_L stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_SP_NP_R stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_V_SP_NP_L stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_V+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_V_SP_NP_R stats_SP_NP.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_AV_SP_NP_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+cp {$s}_STS_post_AV_SP_NP_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+
+cp {$s}_STS_post_A_SP_NP_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+cp {$s}_STS_post_A_SP_NP_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+
+cp {$s}_STS_post_V_SP_NP_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+cp {$s}_STS_post_V_SP_NP_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_AV_ROIs_AN_AVN_SP_NP
+
+end
+
+
+## From Clear vs Noisy ROIs (A,AV,both) for A, V, AV, Mouth, Eye responses
+
+foreach s ( $ss )
+
+echo Analysis Subject $s
+
+cd /Volumes/data/BCM/{$s}/afni/
+
+3dmaskdump -mask STS_post_A_Clear+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_Clear_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_Clear+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_Clear_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_Noisy+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_Noisy_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_Noisy+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_Noisy_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_A_Clear_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A
+cp {$s}_STS_post_A_Clear_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A
+cp {$s}_STS_post_A_Noisy_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A
+cp {$s}_STS_post_A_Noisy_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A
+
+3dmaskdump -mask STS_post_AV_Clear+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_AV_Clear_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_AV_Clear+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_AV_Clear_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_AV_Noisy+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_AV_Noisy_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_AV_Noisy+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_AV_Noisy_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_AV_Clear_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_AV
+cp {$s}_STS_post_AV_Clear_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_AV
+cp {$s}_STS_post_AV_Noisy_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_AV
+cp {$s}_STS_post_AV_Noisy_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_AV
+
+3dmaskdump -mask STS_post_A_AV_Clear+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_AV_Clear_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_AV_Clear+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_AV_Clear_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_AV_Noisy+orig -xyz -mrange 0.8 1.2 -o {$s}_STS_post_A_AV_Noisy_L stats.{$s}+orig'[1,4,7,10,13,16,19]'
+3dmaskdump -mask STS_post_A_AV_Noisy+orig -xyz -mrange 1.8 2.2 -o {$s}_STS_post_A_AV_Noisy_R stats.{$s}+orig'[1,4,7,10,13,16,19]'
+
+cp {$s}_STS_post_A_AV_Clear_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A_AV
+cp {$s}_STS_post_A_AV_Clear_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A_AV
+cp {$s}_STS_post_A_AV_Noisy_L /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A_AV
+cp {$s}_STS_post_A_AV_Noisy_R /Volumes/data/BCM/Experiments/Noisy_Audiovisual_fMRI/ROI_Analysis_Clear_Noisy_A_AV
+
+end
+
