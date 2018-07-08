@@ -1,6 +1,6 @@
-# fMRI_Analysis_AFNI_Unix_Matlab
+### fMRI_Analysis_AFNI_Unix_Matlab
 
-# AFNI pre-processing, 1st level statistics and ROI analysis:
+### AFNI pre-processing, 1st level statistics and ROI analysis:
 
 fMRI_Preprocessing_Statistics_Recon.txt
 
@@ -13,7 +13,7 @@ fMRI_Preprocessing_Statistics_Recon.txt
 - Calculates and extracts percent signal values from statistical maps from individual ROIs
 
 
-# Automated SUMA controller:
+### Automated SUMA controller:
 
 Create_Contrast_ROI_images.txt
 
@@ -21,14 +21,14 @@ Create_Contrast_ROI_images.txt
 - Loads individual ROIs (anatomical and/or functional) per subject calls SUMA displays ROI on individual reconstructed brain surface and saves a jpg of left and right hemisphere as lateral and medial view in designated location
 
 
-# General regressor files for AFNI
+### General regressor files for AFNI
 
 Noisy_Audiovisual_Regressors.m
 
 - Creates regressor files for specified conditions and onsets for two experiments
 
 
-# Individual regressor files for AFNI
+### Individual regressor files for AFNI
 
 Noisy_Audiovisual_Regressors_Individual_Response.m
 
